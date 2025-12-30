@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven-3.9.5'  // Jenkins tool name
+        jdk 'JDK-17'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/<username>/hello-world.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Archive JAR') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                // Example: copy JAR to EC2 (replace <EC2_IP> & <KEY.pem>)
+                sh '''
+                scp -i /path/to/key.pem target/*.jar ec2-user@<EC2_IP>:/home/ec2-user/
+                '''
+            }
+        }
+    }
+}
